@@ -31,6 +31,7 @@ var FSHADER_SOURCE =`
   varying vec4 v_VertPos;
   uniform int u_whichTexture;
   uniform bool u_lightOn;
+  uniform vec3 u_lightColor;
   void main() {
 
     if(u_whichTexture == -2){
@@ -64,9 +65,9 @@ var FSHADER_SOURCE =`
     vec3 E = normalize(u_cameraPos-vec3(v_VertPos));
 
     //Specular
-    float specular = pow(max(dot(E, R), 0.0), 10.0);
+    vec3 specular = u_lightColor * pow(max(dot(E, R), 0.0), 10.0);
 
-    vec3 diffuse = vec3(gl_FragColor) * nDotL * 0.7;
+    vec3 diffuse = vec3(gl_FragColor) * u_lightColor * nDotL * 0.7;
     vec3 ambient = vec3(gl_FragColor) * 0.3;
     if(u_lightOn){
       if(u_whichTexture == 0){
@@ -95,6 +96,7 @@ var FSHADER_SOURCE =`
   let u_lightPos;
   let u_cameraPos;
   let u_lightOn;
+  let u_lightColor;
 
   function setUpGL(){
     // Retrieve <canvas> element
@@ -218,6 +220,12 @@ var FSHADER_SOURCE =`
       console.log('Failed to get the storage location of u_lightOn');
       return;
     }
+
+    u_lightColor = gl.getUniformLocation(gl.program, 'u_lightColor');
+    if (!u_lightColor) {
+      console.log('Failed to get the storage location of u_lightColor');
+      return;
+    }
   }
 
   //Global Variables related to UI Elements
@@ -241,6 +249,7 @@ var FSHADER_SOURCE =`
   let g_NormalOn = false;
   let g_lightPos = [0, 1, -2];
   let g_lightOn = false;
+  let g_lightColor = [1, 1, 1];
 
   // Set up actions for HTML UI elements
   function addActionsForHtmlUI(){
@@ -251,7 +260,11 @@ var FSHADER_SOURCE =`
 
     document.getElementById('lightOnButton').onclick = function() { g_lightOn = true; };
     document.getElementById('lightOffButton').onclick = function() { g_lightOn = false; };
-
+    document.getElementById('colorSlide').addEventListener('input', function() {
+      let h = parseFloat(this.value);  // Get value (0 to 1)
+      g_lightColor = hslToRgb(h);      // Convert hue to RGB
+      renderAllShapes();               // Redraw scene with new color
+  });
     //Animation Events
     document.getElementById("NormalOnButton").onclick = function() { g_NormalOn = true; };
     document.getElementById("NormalOffButton").onclick = function() { g_NormalOn = false; };
@@ -546,6 +559,8 @@ function renderAllShapes(){
 
   //Pass Light On
   gl.uniform1i(u_lightOn, g_lightOn);
+  gl.uniform3f(u_lightColor, g_lightColor[0], g_lightColor[1], g_lightColor[2]);
+
 
   renderScene();
 
@@ -582,4 +597,13 @@ function mouseControl() {
       }
   };
 }
+
+function hslToRgb(h) {
+  let r = Math.abs(h * 6 - 3) - 1;
+  let g = 2 - Math.abs(h * 6 - 2);
+  let b = 2 - Math.abs(h * 6 - 4);
+  return [Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))];
+}
+
+
   
