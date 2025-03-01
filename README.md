@@ -6,8 +6,7 @@ Student Email [yzsims@ucsc.edu]
 
 Notes to Grader: 
 Use Mouse Control to Rotate the Scene.
-Scene Lags really badly currently when certain actions are performed.
-Spot Light has yet to be added the the scene.
+Spot Light has yet to be added the the scene. So likely gonna be a 9/10.
 
 I used Copilot and ChatGPT in this assignment. 
 
