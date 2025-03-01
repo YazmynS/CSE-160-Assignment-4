@@ -226,7 +226,6 @@ var FSHADER_SOURCE =`
   //Global Variables related to UI Elements
   let g_sliderAngle = 0;
   let g_mouseAngle = 0;
-  let lastMouseX = 0;
 
   // Animal Variables
   let g_headAngle = 0;
@@ -249,7 +248,6 @@ var FSHADER_SOURCE =`
   // Set up actions for HTML UI elements
   function addActionsForHtmlUI(){
     // Slider Events
-    document.getElementById('lightSlideX').addEventListener('mousemove', function(ev) { if(ev.buttons == 1){g_lightPos[0] = this.value/100; renderAllShapes();}});
     document.getElementById('lightSlideY').addEventListener('mousemove', function(ev) { if(ev.buttons == 1){g_lightPos[1] = this.value/100; renderAllShapes();}});
     document.getElementById('lightSlideZ').addEventListener('mousemove', function(ev) { if(ev.buttons == 1){g_lightPos[2] = this.value/100; renderAllShapes();}});
 
@@ -423,9 +421,9 @@ function renderScene(){
 
   // Draw Head
   var headMatrix = new Matrix4(bodyCoordinateMat);
-  headMatrix.translate(0, 0, -0.01);
+  headMatrix.translate(0, 0, -0.3);
   headMatrix.rotate(g_headAngle, 1, 0, 0);
-  var head = new Cube(new Matrix4(headMatrix), [1.0, 1.0, 0, 1.0], 1);
+  var head = new Cube(new Matrix4(headMatrix), [1.0, 1.0, 0, 1.0]);
   if(g_NormalOn) head.textureNum = -3;
   head.matrix.scale(0.3, 0.3, 0.3);
   gl.activeTexture(gl.TEXTURE1);
@@ -435,7 +433,7 @@ function renderScene(){
 
   // Draw Butt
   var buttMatrix = new Matrix4(bodyCoordinateMat1);
-  buttMatrix.translate(0, 0, 0.25);
+  buttMatrix.translate(0, 0, 0.3);
   buttMatrix.rotate(g_buttAngle, 1, 0, 0);
   var butt = new Cube(new Matrix4(buttMatrix), [1, 1, 0, 1.0]);
   if(g_NormalOn) butt.textureNum = -3;
@@ -572,25 +570,28 @@ function sendTextToHTML(text, htmlID){
   }
   htmlElm.innerHTML = text;
 }
+
 // Rotate Camera with Mouse
+let lastMouseX = 0;
+let mouseMoved = false; // Flag to indicate if mouse moved
+
 function mouseControl() {
-  canvas.onmousedown = function(ev) {
-      lastMouseX = ev.clientX;
-  };
-  canvas.onmousemove = function(ev) { 
-      if(ev.buttons == 1) { // Detect mouse drag
-          let deltaX = ev.clientX - lastMouseX;
+    canvas.onmousedown = function(ev) {
+        lastMouseX = ev.clientX;
+    };
 
-          if (Math.abs(deltaX) < 1) {
-              return;
-          }
-          // Adjust rotation speed
-          g_mouseAngle += deltaX * 0.5; 
+    canvas.onmousemove = function(ev) {
+        if (ev.buttons == 1) { // Only rotate if mouse button is held
+            let deltaX = ev.clientX - lastMouseX;
 
-          renderAllShapes();
-          lastMouseX = ev.clientX; // Update last position
-      }
-  };
+            if (Math.abs(deltaX) > 0) { // Only update if actual movement happened
+                g_mouseAngle += deltaX * 0.5;  // Adjust rotation speed
+                lastMouseX = ev.clientX;
+
+                mouseMoved = true;  // Flag that rotation changed
+            }
+        }
+    };
 }
 
 function hslToRgb(h) {
@@ -599,6 +600,3 @@ function hslToRgb(h) {
   let b = 2 - Math.abs(h * 6 - 4);
   return [Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))];
 }
-
-
-  
