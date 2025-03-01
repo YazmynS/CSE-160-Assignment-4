@@ -401,7 +401,7 @@ function updateAnimationAngles(){
   if (g_legsAnimation){ g_leg1Angle = (30 * Math.sin(g_seconds) - 10); }
 
   //Light Animation
-  //g_lightPos[0] = Math.cos(g_seconds);
+  g_lightPos[0] = Math.cos(g_seconds);
 }
 function renderScene(){ 
   // Draw Body
